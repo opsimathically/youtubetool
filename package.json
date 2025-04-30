@@ -1,0 +1,51 @@
+{
+  "name": "youtubevideomanager",
+  "version": "1.0.1",
+  "description": "Personal project for managing youtube content directly.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "test": "ts-node -r tsconfig-paths/register test/youtubevideomanager.test.ts",
+    "docs": "typedoc"
+  },
+  "keywords": [
+    "CA",
+    "certificate",
+    "authority",
+    "certificates"
+  ],
+  "homepage": "https://github.com/opsimathically/certificateauthority",
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.15.3",
+    "@types/node-forge": "^1.3.11",
+    "@types/wtfnode": "^0.7.3",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.20.1",
+    "globals": "^15.14.0",
+    "prettier": "^3.5.0",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsup": "^8.3.6",
+    "typedoc": "^0.28.1",
+    "typedoc-plugin-markdown": "^4.6.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.0",
+    "wtfnode": "^0.10.0"
+  },
+  "author": "Jason Medeiros",
+  "license": "MIT",
+  "dependencies": {
+    "@opsimathically/deferred": "latest",
+    "@opsimathically/dirmap": "^1.0.6",
+    "@swc/core": "^1.11.24",
+    "@types/command-line-args": "^5.2.3",
+    "@types/command-line-usage": "^5.0.4",
+    "command-line-args": "^6.0.1",
+    "command-line-usage": "^7.0.3",
+    "googleapis": "^105.0.0",
+    "source-map-support": "^0.5.21"
+  }
+}
