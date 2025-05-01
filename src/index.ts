@@ -1,26 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-empty */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-require-imports */
+
 import YoutubeAPITokenGenerator from '@src/tokens/YoutubeAPITokenGenerator.class';
+import YoutubeAPI from '@src/youtubeapi/YoutubeAPI.class';
+import FFMpegVideoTools from '@src/videotools/FFMpegVideoTools.class';
+import * as utils from '@src/utils/utils';
 import { read_json_file } from '@src/utils/utils';
 import path from 'path';
 import assert from 'assert';
 import commandLineArgs from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
 
-require('ts-node').register({
-  transpileOnly: true,
-  project: './tsconfig.json'
-});
+export { YoutubeAPI, YoutubeAPITokenGenerator, FFMpegVideoTools, utils };
 
 if (require.main === module) {
   (async function () {
     const optionDefinitions = [
       { name: 'generate_new_token', alias: 'g', type: Boolean },
       { name: 'token_json_output_file_path', alias: 't', type: String },
-      { name: 'config_file', alias: 'c', type: String },
-      { name: 'module_file', alias: 'm', type: String }
+      { name: 'config_file', alias: 'c', type: String }
     ];
 
     const sections = [
@@ -96,31 +94,9 @@ if (require.main === module) {
       return;
     }
 
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    // %%% Process Actions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    let parsed_tokens_file: null | Record<string, any> = null;
-    try {
-      parsed_tokens_file = await read_json_file(parsed_config_file.tokens_file);
-    } catch (err) {}
-
-    if (!parsed_tokens_file) {
-      assert.fail(`Error, the token file already exists.`);
-    }
-
-    if (!cli_options.module_file) {
-      assert.fail(
-        "--module_file parameter was unset.  If you're not generating tokens, you should be running a module."
-      );
-      return;
-    }
-
-    // module_file
-    const module_path = path.resolve(cli_options.module_file);
-    (async () => {
-      const mod = await import(module_path);
-      const module_handle = new mod.module();
-    })();
+    console.log(usage);
+    console.log(
+      'Unknown flag selection, please run the application as instructed.'
+    );
   })();
 }
