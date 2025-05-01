@@ -6,12 +6,19 @@ import YoutubeAPI from '@src/youtubeapi/YoutubeAPI.class';
 import FFMpegVideoTools from '@src/videotools/FFMpegVideoTools.class';
 import * as utils from '@src/utils/utils';
 import { read_json_file } from '@src/utils/utils';
+import { DirMap } from '@opsimathically/dirmap';
 import path from 'path';
 import assert from 'assert';
 import commandLineArgs from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
 
-export { YoutubeAPI, YoutubeAPITokenGenerator, FFMpegVideoTools, utils };
+export {
+  YoutubeAPI,
+  YoutubeAPITokenGenerator,
+  FFMpegVideoTools,
+  DirMap,
+  utils
+};
 
 if (require.main === module) {
   (async function () {

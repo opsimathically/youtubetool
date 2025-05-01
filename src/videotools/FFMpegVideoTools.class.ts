@@ -8,6 +8,14 @@ import * as fs from 'fs';
 import * as fs_promises from 'fs/promises';
 import path from 'path';
 
+/**
+ * IMPORTANT DISCLAIMER: Pretty much ALL of these methods are UNSAFE.  They invoke shell commands using
+ * unsanitized inputs.  I, myself, am personally careful with their use.  Do not use them
+ * unless you also examine and understand what's happening, then, sanitizing data prior to use.  I may
+ * add sanitization later, but I need this code done fast, so much so that even this disclaimer is
+ * a bit too much of my time to spend writing.
+ */
+
 class FFMpegVideoTools {
   constructor() {}
 
@@ -59,6 +67,7 @@ class FFMpegVideoTools {
   async splitVideoIntoChunks(params: {
     input_file: string;
     output_dir: string;
+    chunk_suffix: string;
     chunk_duration_secs: number;
   }) {
     const ffmpeg_ref = this;
@@ -72,13 +81,13 @@ class FFMpegVideoTools {
     });
     if (!chunk_count) return null;
 
-    for (let i = 0; i < chunk_count; i++) {
+    for (let i = 0; i < chunk_count - 1; i++) {
       const start = i * params.chunk_duration_secs;
 
       const file_padded_chunk_number = i.toString().padStart(7, '0');
       const output_file = path.join(
         params.output_dir,
-        `${file_padded_chunk_number}__chunk.mp4`
+        `${file_padded_chunk_number}__${params.chunk_suffix}.mp4`
       );
 
       const command = `ffmpeg -y -ss "${start}" -i "${params.input_file}" -t "${params.chunk_duration_secs}" -c copy "${output_file}"`;
@@ -90,6 +99,7 @@ class FFMpegVideoTools {
 
   async addTitleCardToFileChunks(params: {
     chunk_dir: string;
+    chunk_suffix: string;
     title_card_png: string;
   }) {
     const ffmpeg_ref = this;
@@ -106,7 +116,7 @@ class FFMpegVideoTools {
           found_chunks_array.push(file_info.absolute_path);
           const out_filename = path.join(
             file_info.base_path,
-            `${chunk_number}__with_titlecard.mp4`
+            `${chunk_number}__${params.chunk_suffix}.mp4`
           );
           const command = `ffmpeg -y -loop 1 -framerate 30 -t 2 -i "${params.title_card_png}" -i "${file_info.absolute_path}" -filter_complex "[0:v]scale=1280:720,setsar=1,format=yuv420p[v0]; [v0][1:v]concat=n=2:v=1:a=0[outv]" -map "[outv]" -map 1:a -c:v libx264 -c:a copy -vsync 2 "${out_filename}"`;
           console.log(command);
@@ -115,6 +125,43 @@ class FFMpegVideoTools {
         return false;
       }
     });
+  }
+
+  async getOrderedChunksReadyForUpload(params: {
+    chunk_dir: string;
+    chunk_suffix: string;
+  }) {
+    const ffmpeg_ref = this;
+
+    const dirmap = new DirMap();
+
+    const chunk_info_arr: {
+      chunk_number: number;
+      file_hash: string;
+      file_info: file_info_t;
+    }[] = [];
+
+    await dirmap.run({
+      base_dir: params.chunk_dir,
+      onfoundcb: async function (this: DirMap, file_info: file_info_t) {
+        if (
+          file_info.absolute_path.endsWith(`${params.chunk_suffix}.mp4`) ===
+          true
+        ) {
+          const split_parts = file_info.name.split('__');
+
+          const chunk_number = split_parts[0];
+          const file_hash = split_parts[1];
+          chunk_info_arr.push({
+            chunk_number: parseInt(chunk_number),
+            file_hash: file_hash,
+            file_info: file_info
+          });
+        }
+        return false;
+      }
+    });
+    return chunk_info_arr;
   }
 }
 

@@ -83,7 +83,11 @@ class YoutubeAPI {
   // %%% Videos %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  async listVideos(params: { title_match_regex?: RegExp }) {
+  async listVideos(params: {
+    title_match_regex?: RegExp;
+    title_match_literal?: string;
+    max_pages?: number;
+  }) {
     // set self reference
     const ytra_ref = this;
 
@@ -113,6 +117,7 @@ class YoutubeAPI {
     let nextPageToken: string | undefined = undefined;
 
     const video_array: any[] = [];
+    let page_count = 0;
     do {
       const res: any = await youtube.playlistItems.list({
         part: ['snippet', 'contentDetails'],
@@ -125,10 +130,16 @@ class YoutubeAPI {
         if (params?.title_match_regex) {
           if (!params?.title_match_regex.test(item.snippet.title)) continue;
         }
+        if (params?.title_match_literal) {
+          if (params.title_match_literal !== item.snippet.title) continue;
+        }
         video_array.push(item);
       }
 
       nextPageToken = res.data.nextPageToken;
+      page_count++;
+
+      if (params?.max_pages) if (page_count >= params.max_pages) break;
     } while (nextPageToken);
 
     // return videos
@@ -177,12 +188,12 @@ class YoutubeAPI {
     tags: string[];
     categoryId: string;
     defaultLanguage: string;
-    privacyStatus: 'unlisted' | 'public' | 'private';
+    privacyStatus: string; // 'unlisted' | 'public' | 'private';
     selfDeclaredMadeForKids: boolean;
     embeddable: boolean;
-    license: 'youtube' | 'creativeCommon';
+    license: string; // 'youtube' | 'creativeCommon';
     publicStatsViewable: boolean;
-    caption: 'false' | 'true';
+    caption: string; // 'false' | 'true';
   }) {
     // set self reference
     const ytra_ref = this;
@@ -216,6 +227,90 @@ class YoutubeAPI {
 
     // return the video id
     return res.data.id;
+  }
+
+  /*
+
+// Step 2: Modify the fields you want to update
+const updated = await youtube.videos.update({
+  part: ['snippet', 'status'],
+  requestBody: {
+    id: videoId,
+    snippet: {
+      title: 'Updated Video Title',
+      description: 'Updated video description with more details',
+      tags: ['updated', 'typescript', 'youtubeapi'],
+      categoryId: '22', // 22 = People & Blogs
+      defaultLanguage: 'en',
+    },
+    status: {
+      privacyStatus: 'public',             // or 'private', 'unlisted'
+      embeddable: true,
+      license: 'youtube',                  // or 'creativeCommon'
+      publicStatsViewable: true,
+      selfDeclaredMadeForKids: false,      // COPPA setting
+    },
+  },
+});
+*/
+  async updateVideo(params: {
+    video_id: string;
+    title: string;
+    description: string;
+    tags: string[];
+    categoryId: string;
+    defaultLanguage: string;
+    privacyStatus: string;
+    embeddable: boolean;
+    license: string;
+    publicStatsViewable: boolean;
+    selfDeclaredMadeForKids: boolean;
+  }) {
+    // set self reference
+    const ytra_ref = this;
+    const youtube = await ytra_ref.createYoutubeHandle();
+
+    // run the update
+    const updated = await youtube.videos.update({
+      part: ['snippet', 'status'],
+      requestBody: {
+        id: params.video_id,
+        snippet: {
+          title: params.title,
+          description: params.description,
+          tags: params.tags,
+          categoryId: params.categoryId,
+          defaultLanguage: params.defaultLanguage
+        },
+        status: {
+          privacyStatus: params.privacyStatus,
+          embeddable: params.embeddable,
+          license: params.license,
+          publicStatsViewable: params.publicStatsViewable,
+          selfDeclaredMadeForKids: params.selfDeclaredMadeForKids
+        }
+      }
+    });
+
+    // ensure that status is set
+    if (updated.status === 200) return true;
+    return false;
+  }
+
+  async setVideoThumbnail(params: {
+    video_id: string;
+    thumbnail_png_path: string;
+  }) {
+    // set self reference
+    const ytra_ref = this;
+    const youtube = await ytra_ref.createYoutubeHandle();
+    const res = await youtube.thumbnails.set({
+      videoId: params.video_id,
+      media: {
+        mimeType: 'image/png',
+        body: fs.createReadStream(params.thumbnail_png_path)
+      }
+    });
   }
 
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

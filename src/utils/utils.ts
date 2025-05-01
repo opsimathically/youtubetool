@@ -6,6 +6,10 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 const exec_async = promisify(exec);
 
+import * as fs from 'fs';
+import { createHash } from 'crypto';
+import { pipeline } from 'stream/promises';
+
 async function read_json_file<T = unknown>(file_path: string): Promise<T> {
   try {
     const absolute_path = path.resolve(file_path);
@@ -40,4 +44,23 @@ async function runShellScript(script: string) {
   }
 }
 
-export { read_json_file, askQuestion, runShellScript };
+function sha1File(file_path: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const hash = createHash('sha1');
+    const stream = fs.createReadStream(file_path);
+
+    stream.on('data', (chunk) => {
+      hash.update(chunk);
+    });
+
+    stream.on('end', () => {
+      resolve(hash.digest('hex'));
+    });
+
+    stream.on('error', (err) => {
+      reject(err);
+    });
+  });
+}
+
+export { read_json_file, askQuestion, runShellScript, sha1File };
