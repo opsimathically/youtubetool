@@ -97,6 +97,22 @@ class FFMpegVideoTools {
     }
   }
 
+  async addTitleCardToFile(params: {
+    file_path: string;
+    output_file_path: string;
+    title_card_png: string;
+  }) {
+    const ffmpeg_ref = this;
+    const dirmap = new DirMap();
+    if (!fs.existsSync(params.file_path)) return false;
+    if (!fs.existsSync(params.title_card_png)) return false;
+
+    const command = `ffmpeg -y -loop 1 -framerate 30 -t 2 -i "${params.title_card_png}" -i "${params.file_path}" -filter_complex "[0:v]scale=1280:720,setsar=1,format=yuv420p[v0]; [v0][1:v]concat=n=2:v=1:a=0[outv]" -map "[outv]" -map 1:a -c:v libx264 -c:a copy -vsync 2 "${params.output_file_path}"`;
+    await runShellScript(command);
+
+    return true;
+  }
+
   async addTitleCardToFileChunks(params: {
     chunk_dir: string;
     chunk_suffix: string;
