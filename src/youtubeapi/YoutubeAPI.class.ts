@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-this-alias */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { google } from 'googleapis';
@@ -317,7 +318,10 @@ const updated = await youtube.videos.update({
   // %%% Create and Remove Playlists %%%%%%%%%%%%%%%%%
   // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  async listPlaylists(params?: { playlist_title_regexp?: RegExp }) {
+  async listPlaylists(params?: {
+    playlist_title_regexp?: RegExp;
+    playlist_title_literal?: string;
+  }) {
     const ytra_ref = this;
     const youtube = await ytra_ref.createYoutubeHandle();
 
@@ -337,6 +341,10 @@ const updated = await youtube.videos.update({
       for (const playlist of playlists) {
         if (params?.playlist_title_regexp) {
           if (!params.playlist_title_regexp.test(playlist.snippet.title))
+            continue;
+        }
+        if (params?.playlist_title_literal) {
+          if (params.playlist_title_literal !== playlist.snippet.title)
             continue;
         }
         playlist_array.push(playlist);
