@@ -4,6 +4,7 @@
 import YoutubeAPITokenGenerator from '@src/tokens/YoutubeAPITokenGenerator.class';
 import YoutubeAPI from '@src/youtubeapi/YoutubeAPI.class';
 import FFMpegVideoTools from '@src/videotools/FFMpegVideoTools.class';
+import PngResizer from '@src/pngresizer/PngResizer.class';
 import * as utils from '@src/utils/utils';
 import { read_json_file } from '@src/utils/utils';
 import { DirMap } from '@opsimathically/dirmap';
@@ -13,6 +14,7 @@ import commandLineArgs from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
 
 export {
+  PngResizer,
   YoutubeAPI,
   YoutubeAPITokenGenerator,
   FFMpegVideoTools,
